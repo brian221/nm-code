@@ -1,0 +1,6 @@
+{
+    "extends": "airbnb",
+    "rules": {
+        "no-console": ["warn", { "allow": ["warn", "error", "log"] } ]
+    }
+}

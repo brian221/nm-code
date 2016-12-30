@@ -1,0 +1,15 @@
+## Changes Made
+
+Installed AirBnB eslint module and fixed all linting issues according to that standard.
+
+Ignored the test path for linting due to many issues with functions and unreferenced
+variables like 'describe' and 'it'.  Mocha also recommends NOT using arrow functions
+for its tests.
+
+Removed many object-scoped (this dot) variables in the logger as possible.
+
+Moved the colorizing of the message from the transport function to the format function.
+
+Utilitzed constants for the log levels rather than hard-coded strings.
+
+Moved if/then/else logic for selecting color to a switch statement.

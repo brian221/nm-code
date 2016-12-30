@@ -1,71 +1,70 @@
+const chalk = require('chalk');
+
 const LEVELS = {
-    INFO: 'info',
-    WARN: 'warning',
-    ERROR: 'error',
-    DEBUG: 'debug'
+  INFO: 'info',
+  WARN: 'warning',
+  ERROR: 'error',
+  DEBUG: 'debug',
 };
 
-function logger(config) {
-    this.root = config.root || 'root';
+const Logger = function logger(config) {
+  this.root = config.root || 'root';
 
-    if (config.format) {
-        this.format = config.format;
+  if (config.format && typeof config.format === 'function') {
+    this.format = config.format;
+  }
+
+  if (config.transport && typeof config.transport === 'function') {
+    this.transport = config.transport;
+  }
+};
+
+Logger.prototype = {
+  log(data, level) {
+    const logObj = this.createLogObject(data, level);
+    const formattedMsg = this.format(logObj);
+
+    this.transport(level, formattedMsg);
+  },
+
+  createLogObject(data, level) {
+    let rootObj;
+
+    if (this.root) {
+      rootObj = { root: this.root };
     }
 
-    if (config.transport) {
-        this.transport = config.transport;
+    const logData = (typeof data === 'string') ? { message: data } : data;
+
+    const logObj = Object.assign(rootObj, logData, { level: level || 'info' });
+
+    return logObj;
+  },
+
+  format(logObj) {
+    let colorMessage = {};
+    const textMessage = JSON.stringify(logObj);
+
+    switch (logObj.level) {
+      case LEVELS.ERROR:
+        colorMessage = chalk.red(textMessage);
+        break;
+      case LEVELS.WARN:
+        colorMessage = chalk.yellow(textMessage);
+        break;
+      case LEVELS.DEBUG:
+        colorMessage = chalk.blue(textMessage);
+        break;
+      default:
+        colorMessage = chalk.green(textMessage);
     }
-}
 
-logger.prototype = {
+    return colorMessage;
+  },
 
-    log(data, level) {
-        this.level = level;
-        this.data = data;
+  transport(level, message) {
+    console.log(message);
+  },
+};
 
-        const logObj = this.createLogObject();
-
-        const message = this.format(logObj);
-
-        this.transport(level, message);
-    },
-
-    createLogObject() {
-        let rootObj;
-
-        if (this.root) {
-            rootObj = { root: this.root };
-        }
-
-        const data = typeof this.data == 'string' ? { message: this.data } : this.data;
-
-        const logObj = Object.assign(rootObj, data, { level: this.level || 'info'});
-
-        return logObj;
-    },
-
-    format(logObj) {
-        return JSON.stringify(logObj);
-    },
-
-    transport(level, message) {
-        const chalk = require('chalk');
-
-        if (level == 'error') {
-            console.log(chalk.red(message));
-        }
-        else if (level == 'warning') {
-            console.log(chalk.yellow(message));
-        }
-        else if (level == 'debug') {
-            console.log(chalk.blue(message));
-        }
-        else {
-            //the default is info
-            console.log(chalk.green(message));
-        }
-
-    }
-}
-
-module.exports = { logger, LEVELS };
+module.exports = { Logger, LEVELS };
